@@ -57,6 +57,93 @@ const battleFunctions = {
         } else {
             moves[1]
         }
+    },
+    calculateDamage: (attackPoke, defensePoke, move) => {
+        const power = selectedMove.power;
+        const attack = attackPoke.baseStats.attack;
+        const defense = defensePoke.baseStats.defense;
+        const modifier = this.calculateModifier(attackPoke, defensePoke, move);
+
+        const baseDamage = (0.5 * power * (attack / defense) * 1) + 1;
+        const totalDamage = baseDamage * modifier.mod;
+
+        if (modifier.crit === 2) {
+            console.log("Critical Hit!")
+        };
+        if (modifier.type === 0.5) {
+            console.log("It's not very effective...")
+        };
+        if (modifier.type === 2) {
+            console.log("It's super effective!")
+        };
+
+        console.log(totalDamage);
+        console.log(modifier);
+        return totalDamage;
+    },
+    calculateModifier: (attackPoke, defensePoke, move) => {
+        let isCritical = 1;
+        let isSTAB = 1;
+        let typeMod = this.calculateEffective(defensePoke, move);
+        const critChance = Math.floor(Math.random() * 11);
+
+        if (critChance >= 9) {
+            isCritical = 2;
+        };
+        if (move.type === attackPoke.type) {
+            isSTAB = 1.5
+        };
+        
+        const modifier = {
+            mod: isCritical * isSTAB * typeMod,
+            crit: isCritical,
+            type: typeMod
+        };
+
+        return modifier;
+    },
+    // Need to change to include all types.
+    calculateEffective: (defensePoke, move) => {
+        let moveType = move.type;
+        let pokeType = defensePoke.type;
+
+        if (pokeType === "Grass") {
+
+            if (moveType === "Grass") {
+                return 0.5
+            } else if (moveType === "Water") {
+                return 0.5
+            } else if (moveType === "Fire") {
+                return 2
+            } else {
+                return 1
+            }
+
+        } else if (pokeType === "Fire") {
+            
+            if (moveType === "Grass") {
+                return 0.5
+            } else if (moveType === "Water") {
+                return 2
+            } else if (moveType === "Fire") {
+                return 0.5
+            } else {
+                return 1
+            }
+
+        } else {
+
+            if (moveType === "Grass") {
+                return 2
+            } else if (moveType === "Water") {
+                return 0.5
+            } else if (moveType === "Fire") {
+                return 0.5
+            } else {
+                return 1
+            }
+
+        }
     }
 };
 

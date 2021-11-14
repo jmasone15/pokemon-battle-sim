@@ -6,7 +6,14 @@ const figlet = require("figlet");
 const testPoke = require("./utils/testPokemon");
 const selectStarter = require("./utils/functions/selectStarter");
 const pokeArray = require("./utils/testPokemon");
-const { getOpponentPoke, getBattleHeader, whoGoesFirst, userSelectMove, oppSelectMove } = require("./utils/functions/battleFunctions");
+const {
+    getOpponentPoke,
+    getBattleHeader,
+    whoGoesFirst,
+    userSelectMove,
+    oppSelectMove,
+    calculateDamage
+} = require("./utils/functions/battleFunctions");
 
 function init() {
     // Large opening header
@@ -19,10 +26,10 @@ function init() {
     )
 
     setTimeout(() => {
-        selectStarter(testPoke, battle);
+        selectStarter(testPoke, battleStart);
     }, 100);
 
-    const battle = (starter) => {
+    const battleStart = (starter) => {
         console.clear();
         console.log("Trainer Kelley has challenged you to a battle!\n");
 
@@ -39,44 +46,42 @@ function init() {
             console.log(`You sent out: ${userPokemon.name}!\n`);
         }, 100)
 
-        setTimeout(() => {
-            getBattleHeader(userPokemon, opponentPokemon);
+        setTimeout(() => {battleMenu(userPokemon, opponentPokemon)}, 100)
+    };
 
-            inquirer.prompt([
-                {
-                    type: "list",
-                    name: "choice",
-                    message: "What would you like to do?",
-                    choices: [
-                        "Fight",
-                        "Forfeit"
-                    ]
-                }
-            ]).then(data => {
-                if (data.choice === "Fight") {
-                    // Checks speed to see which pokemon goes first.
-                    let first = whoGoesFirst(userPokemon, opponentPokemon);
-                    let second;
-                    let firstMove;
-                    let secondMove;
+    const battleMenu = (userPokemon, opponentPokemon) => {
+        let currentUserPoke = userPokemon;
+        let currentOppPoke = opponentPokemon;
 
-                    if (first === userPokemon) {
-                        second = opponentPokemon;
-                        firstMove = userSelectMove(userPokemon.moves);
-                        secondMove = oppSelectMove(opponentPokemon.moves);
-                    } else {
-                        second = userPokemon;
-                        firstMove = oppSelectMove(opponentPokemon.moves);
-                        secondMove = userSelectMove(userPokemon.moves);
-                    }
+        getBattleHeader(currentUserPoke, currentOppPoke);
 
-                } else {
-                    console.log("Forfeit");
-                };
-            }).catch(err => {
-                if (err) throw err;
-            })
-        }, 100)
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: "What would you like to do?",
+                choices: [
+                    "Fight",
+                    "Forfeit"
+                ]
+            }
+        ]).then(data => {
+            if (data.choice === "Fight") {
+
+                // Add callback or put in seperate function.
+                const userMove = userPokemon.moves.find(m => {
+                    m.name === userSelectMove(userPokemon.moves);
+                });
+                const oppMove = opponentPokemon.moves.find(m => {
+                    m.name === oppSelectMove(opponentPokemon.moves);
+                });
+
+            } else {
+                console.log("Forfeit");
+            }
+        }).catch(err => {
+            if (err) throw err;
+        });
     }
 };
 
