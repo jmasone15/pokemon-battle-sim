@@ -1,10 +1,12 @@
 // Required Dependencies
 const inquirer = require("inquirer");
+const figlet = require("figlet");
+
+// Functions and Data in other files.
 const testPoke = require("./utils/testPokemon");
 const selectStarter = require("./utils/functions/selectStarter");
-const figlet = require("figlet");
 const pokeArray = require("./utils/testPokemon");
-const { getOpponentPoke } = require("./utils/functions/battleFunctions");
+const { getOpponentPoke, getBattleHeader } = require("./utils/functions/battleFunctions");
 
 function init() {
     // Large opening header
@@ -18,17 +20,48 @@ function init() {
 
     setTimeout(() => {
         selectStarter(testPoke, battle);
-    }, 500);
+    }, 100);
 
     const battle = (starter) => {
         console.clear();
-        console.log("Trainer Kelley has challenged you to a battle!\n\n");
+        console.log("Trainer Kelley has challenged you to a battle!\n");
 
+        // Finds the user pokemon data by name.
+        // Generates an opponent pokemon based on the user's pokemon.
         const userPokemon = pokeArray.find(p => p.name === starter);
         const opponentPokemon = getOpponentPoke(starter);
 
-        console.log(userPokemon);
-        console.log(opponentPokemon);
+        setTimeout(() => {
+            console.log(`Trainer Kelley sent out: ${opponentPokemon.name}!`);
+        }, 100);
+
+        setTimeout(() => {
+            console.log(`You sent out: ${userPokemon.name}!\n`);
+        }, 100)
+
+        setTimeout(() => {
+            getBattleHeader(userPokemon, opponentPokemon);
+
+            inquirer.prompt([
+                {
+                    type: "list",
+                    name: "choice",
+                    message: "What would you like to do?",
+                    choices: [
+                        "Fight",
+                        "Forfeit"
+                    ]
+                }
+            ]).then(data => {
+                if (choice === "Fight") {
+                    console.log("Fight");
+                } else {
+                    console.log("Forfeit");
+                };
+            }).catch(err => {
+                if (err) throw err;
+            })
+        }, 100)
     }
 };
 
