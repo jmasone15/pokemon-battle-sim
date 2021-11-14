@@ -6,7 +6,7 @@ const figlet = require("figlet");
 const testPoke = require("./utils/testPokemon");
 const selectStarter = require("./utils/functions/selectStarter");
 const pokeArray = require("./utils/testPokemon");
-const { getOpponentPoke, getBattleHeader } = require("./utils/functions/battleFunctions");
+const { getOpponentPoke, getBattleHeader, whoGoesFirst, userSelectMove, oppSelectMove } = require("./utils/functions/battleFunctions");
 
 function init() {
     // Large opening header
@@ -53,8 +53,23 @@ function init() {
                     ]
                 }
             ]).then(data => {
-                if (choice === "Fight") {
-                    console.log("Fight");
+                if (data.choice === "Fight") {
+                    // Checks speed to see which pokemon goes first.
+                    let first = whoGoesFirst(userPokemon, opponentPokemon);
+                    let second;
+                    let firstMove;
+                    let secondMove;
+
+                    if (first === userPokemon) {
+                        second = opponentPokemon;
+                        firstMove = userSelectMove(userPokemon.moves);
+                        secondMove = oppSelectMove(opponentPokemon.moves);
+                    } else {
+                        second = userPokemon;
+                        firstMove = oppSelectMove(opponentPokemon.moves);
+                        secondMove = userSelectMove(userPokemon.moves);
+                    }
+
                 } else {
                     console.log("Forfeit");
                 };
