@@ -4,7 +4,6 @@ const figlet = require("figlet");
 
 // Functions and Data in other files.
 const testPoke = require("./utils/testPokemon");
-const selectStarter = require("./utils/functions/selectStarter");
 const pokeArray = require("./utils/testPokemon");
 const {
     getOpponentPoke,
@@ -24,11 +23,29 @@ function init() {
             if (err) throw err;
             console.log(data);
         }
-    )
+    );
 
     setTimeout(() => {
-        selectStarter(testPoke, battleStart);
-    }, 100);
+        console.clear();
+
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "select",
+                message: "Which starter would you like?",
+                choices: testPoke.map(({ name }) => name)
+            }
+        ]).then(data => {
+            console.clear();
+            console.log(`You selected: ${data.select}!`);
+            return setTimeout(() => {
+                battleStart(data.select);
+            }, 3000);
+        }).catch(err => {
+            if (err) throw err;
+            console.log("Something went wrong!")
+        });
+    }, 1500);
 
     const battleStart = (starter) => {
         console.clear();
@@ -41,13 +58,13 @@ function init() {
 
         setTimeout(() => {
             console.log(`Trainer Kelley sent out: ${opponentPokemon.name}!`);
-        }, 100);
+        }, 1500);
 
         setTimeout(() => {
             console.log(`You sent out: ${userPokemon.name}!\n`);
-        }, 100)
+        }, 3000)
 
-        setTimeout(() => {battleMenu(userPokemon, opponentPokemon)}, 100)
+        setTimeout(() => {battleMenu(userPokemon, opponentPokemon)}, 4500)
     };
 
     const battleMenu = (userPokemon, opponentPokemon) => {
@@ -106,15 +123,38 @@ function init() {
                 });
 
             } else {
-                battleEnd();
+                battleEnd(opponentPokemon);
             }
         }).catch(err => {
             if (err) throw err;
         });
     };
 
-    const battleEnd = () => {
-        console.log("Battle end.")
+    const battleEnd = (winnerPoke) => {
+        console.clear();
+        console.log(`${winnerPoke.name} has won the battle!`);
+        setTimeout(() => {
+            inquirer.prompt([
+                {
+                    type: "list",
+                    name: "option",
+                    message: "Would you like to play again?",
+                    choices: [
+                        "Yes",
+                        "No"
+                    ]
+                }
+            ]).then(data => {
+                if (data.choice === "Yes") {
+                    init();
+                } else {
+                    return console.log("Thanks for playing!")
+                }
+            }).catch(err => {
+                if (err) throw err;
+                console.log("Something went wrong.");
+            })
+        }, 1500);
     }
 };
 

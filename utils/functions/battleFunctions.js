@@ -1,4 +1,3 @@
-const inquirer = require("inquirer");
 const pokeArray = require("../testPokemon");
 
 const battleFunctions = {
@@ -58,6 +57,7 @@ const battleFunctions = {
         }
     },
     battleText: (userPokemon, attackObject, next, next2, end) => {
+        console.clear();
         // First Pokemon Attack Logs
         console.log(`${attackObject.firstPoke.name} used ${attackObject.firstMove.name}!`);
         if (attackObject.firstMoveDamage.damageMessage.length != 0) {
@@ -65,10 +65,11 @@ const battleFunctions = {
                 console.log(attackObject.firstMoveDamage.damageMessage[i]);
             }
         }
+
         setTimeout(() => {
             console.log(`${attackObject.secondPoke.name} took ${attackObject.firstMoveDamage.totalDamage} damage!`);
             attackObject.secondPoke.baseStats.hp -= attackObject.firstMoveDamage.totalDamage;
-        }, 1500);
+        }, 1250);
 
         // Second Pokemon Attack Logs
         setTimeout(() => {
@@ -78,15 +79,16 @@ const battleFunctions = {
                     console.log(attackObject.secondMoveDamage.damageMessage[i]);
                 }
             }
-        }, 4500);
+        }, 2500);
+
         setTimeout(() => {
             console.log(`${attackObject.firstPoke.name} took ${attackObject.secondMoveDamage.totalDamage} damage!`);
             attackObject.firstPoke.baseStats.hp -= attackObject.secondMoveDamage.totalDamage;
-        }, 6000);
+        }, 3750);
 
         setTimeout(() => {
             next(attackObject.firstPoke, attackObject.secondPoke, userPokemon, next2, end);
-        }, 7500);
+        }, 5000);
     },
     calculateDamage: (attackPoke, defensePoke, move) => {
         const power = move.power;
@@ -152,8 +154,6 @@ const battleFunctions = {
             type: typeMod
         };
 
-        console.log(modifier);
-
         const baseDamage = ((((((level * 2) / 5) + 2) * power * (attack / defense)) / 50) + 2);
         let damageObject = {
             totalDamage: Math.round(baseDamage * modifier.mod),
@@ -170,14 +170,13 @@ const battleFunctions = {
             damageObject.damageMessage.push("It's super effective!")
         };
 
-        console.log(damageObject);
         return damageObject;
     },
     checkPokeHealth: (firstPoke, secondPoke, userPokemon, next, end) => {
-        if (firstPoke.baseStats.hp <= 0) {
-            return end();
-        } else if (secondPoke.baseStats.hp <= 0) {
-            return end();
+        if (secondPoke.baseStats.hp <= 0) {
+            return end(firstPoke);
+        } else if (firstPoke.baseStats.hp <= 0) {
+            return end(secondPoke);
         } else {
             if (userPokemon.name === firstPoke.name) {
                 return next(firstPoke, secondPoke)
