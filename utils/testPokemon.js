@@ -7,14 +7,14 @@ const pokeArray = [
         "Grass",
         5,
         [
-            new Move("Tackle", "Normal", 5),
-            new Move("Razor Leaf", "Grass", 6)
+            new Move("Tackle", "Normal", 40),
+            new Move("Razor Leaf", "Grass", 40)
         ],
         {
-            attack: 5,
-            defense: 5,
-            speed: 4,
-            hp: 30
+            attack: 68,
+            defense: 64,
+            speed: 31,
+            hp: 55
         }
     ),
     new Pokemon (
@@ -22,14 +22,14 @@ const pokeArray = [
         "Fire", 
         5,
         [
-            new Move("Scratch", "Normal", 4),
-            new Move("Ember", "Fire", 7)
+            new Move("Scratch", "Normal", 40),
+            new Move("Ember", "Fire", 40)
         ],
         {
-            attack: 6,
-            defense: 3,
-            speed: 5,
-            hp: 30
+            attack: 58,
+            defense: 44,
+            speed: 61,
+            hp: 44
         }
     ),
     new Pokemon (
@@ -37,14 +37,14 @@ const pokeArray = [
         "Water",
         5,
         [
-            new Move("Peck", "Flying", 3),
-            new Move("Water Gun", "Water", 6)
+            new Move("Pound", "Normal", 40),
+            new Move("Bubble", "Water", 40)
         ],
         {
-            attack: 4,
-            defense: 6,
-            speed: 4,
-            hp: 30
+            attack: 51,
+            defense: 53,
+            speed: 40,
+            hp: 53
         }
     )
 ];

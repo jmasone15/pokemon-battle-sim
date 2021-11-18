@@ -9,10 +9,11 @@ const pokeArray = require("./utils/testPokemon");
 const {
     getOpponentPoke,
     getBattleHeader,
-    whoGoesFirst,
-    userSelectMove,
     oppSelectMove,
-    calculateDamage
+    battleText,
+    determineFirst,
+    calculateDamage,
+    checkPokeHealth
 } = require("./utils/functions/battleFunctions");
 
 function init() {
@@ -67,21 +68,53 @@ function init() {
             }
         ]).then(data => {
             if (data.choice === "Fight") {
+                console.clear();
 
-                // Add callback or put in seperate function.
-                const userMove = userPokemon.moves.find(m => {
-                    m.name === userSelectMove(userPokemon.moves);
-                });
-                const oppMove = opponentPokemon.moves.find(m => {
-                    m.name === oppSelectMove(opponentPokemon.moves);
+                // Select user move.
+                inquirer.prompt([
+                    {
+                        type: "list",
+                        name: "move",
+                        message: "Select a move:",
+                        choices: userPokemon.moves
+                    }
+                ]).then(data => {
+
+                    let attackObject = {
+                        firstPoke: "",
+                        secondPoke: "",
+                        firstMove: "",
+                        secondMove: "",
+                        firstMoveDamage: "",
+                        secondMoveDamage: ""
+                    }
+                    
+                    const userMove = userPokemon.moves.find(m => m.name === data.move);
+                    const oppMove = oppSelectMove(opponentPokemon.moves);
+                    const attackOrder = determineFirst(currentUserPoke, currentOppPoke, userMove, oppMove);
+
+                    attackObject.firstPoke = attackOrder.first;
+                    attackObject.secondPoke = attackOrder.second;
+                    attackObject.firstMove = attackOrder.firstMove;
+                    attackObject.secondMove = attackOrder.secondMove;
+                    attackObject.firstMoveDamage = calculateDamage(attackOrder.first, attackOrder.second, attackOrder.firstMove);
+                    attackObject.secondMoveDamage = calculateDamage(attackOrder.second, attackOrder.first, attackOrder.secondMove);
+
+                    battleText(userPokemon, attackObject, checkPokeHealth, battleMenu, battleEnd);
+                }).catch(err => {
+                    if (err) throw err;
                 });
 
             } else {
-                console.log("Forfeit");
+                battleEnd();
             }
         }).catch(err => {
             if (err) throw err;
         });
+    };
+
+    const battleEnd = () => {
+        console.log("Battle end.")
     }
 };
 

@@ -19,72 +19,87 @@ const battleFunctions = {
         console.log(`HP: ${JSON.stringify(userPokemon.baseStats.hp).padEnd(27)}                 HP: ${opponentPokemon.baseStats.hp}`);
         console.log("\n-------------------------------------------------------\n")
     },
-    whoGoesFirst: (userPokemon, opponentPokemon) => {
+    determineFirst: (userPokemon, opponentPokemon, userMove, oppMove) => {
         const userSpeed = userPokemon.baseStats.speed;
         const oppSpeed = opponentPokemon.baseStats.speed;
 
+        const userPokeFirst = {
+            first: userPokemon,
+            firstMove: userMove,
+            second: opponentPokemon,
+            secondMove: oppMove
+        };
+        const oppPokeFirst = {
+            first: opponentPokemon,
+            firstMove: oppMove,
+            second: userPokemon,
+            secondMove: userMove
+        };
+
         if (userSpeed > oppSpeed) {
-            return userPokemon
+            return userPokeFirst
         } else if (oppSpeed > userSpeed) {
-            return opponentPokemon
+            return oppPokeFirst
         } else {
             let chance = Math.round(Math.random()) + 1;
             if (chance === 1) {
-                return userPokemon
+                return userPokeFirst
             } else {
-                return opponentPokemon
+                return oppPokeFirst
             }
         }
-    },
-    userSelectMove: (moves) => {
-        inquirer.prompt([
-            {
-                type: "list",
-                name: "move",
-                message: "Select a move:",
-                choices: moves
-            }
-        ]).then(data => {
-            return data.move
-        }).catch(err => {
-            if (err) throw err;
-        })
     },
     oppSelectMove: (moves) => {
         let chance = Math.round(Math.random()) + 1;
         if (chance === 1) {
             return moves[0]
         } else {
-            moves[1]
+            return moves[1]
         }
     },
+    battleText: (userPokemon, attackObject, next, next2, end) => {
+        // First Pokemon Attack Logs
+        console.log(`${attackObject.firstPoke.name} used ${attackObject.firstMove.name}!`);
+        if (attackObject.firstMoveDamage.damageMessage.length != 0) {
+            for (let i = 0; i < attackObject.firstMoveDamage.damageMessage.length; i++) {
+                console.log(attackObject.firstMoveDamage.damageMessage[i]);
+            }
+        }
+        setTimeout(() => {
+            console.log(`${attackObject.secondPoke.name} took ${attackObject.firstMoveDamage.totalDamage} damage!`);
+            attackObject.secondPoke.baseStats.hp -= attackObject.firstMoveDamage.totalDamage;
+        }, 1500);
+
+        // Second Pokemon Attack Logs
+        setTimeout(() => {
+            console.log(`${attackObject.secondPoke.name} used ${attackObject.secondMove.name}!`);
+            if (attackObject.secondMoveDamage.damageMessage.length != 0) {
+                for (let i = 0; i < attackObject.secondMoveDamage.damageMessage.length; i++) {
+                    console.log(attackObject.secondMoveDamage.damageMessage[i]);
+                }
+            }
+        }, 4500);
+        setTimeout(() => {
+            console.log(`${attackObject.firstPoke.name} took ${attackObject.secondMoveDamage.totalDamage} damage!`);
+            attackObject.firstPoke.baseStats.hp -= attackObject.secondMoveDamage.totalDamage;
+        }, 6000);
+
+        setTimeout(() => {
+            next(attackObject.firstPoke, attackObject.secondPoke, userPokemon, next2, end);
+        }, 7500);
+    },
     calculateDamage: (attackPoke, defensePoke, move) => {
-        const power = selectedMove.power;
+        const power = move.power;
         const attack = attackPoke.baseStats.attack;
         const defense = defensePoke.baseStats.defense;
-        const modifier = this.calculateModifier(attackPoke, defensePoke, move);
+        const level = attackPoke.level;
 
-        const baseDamage = (0.5 * power * (attack / defense) * 1) + 1;
-        const totalDamage = baseDamage * modifier.mod;
+        let moveType = move.type;
+        let pokeType = defensePoke.type;
 
-        if (modifier.crit === 2) {
-            console.log("Critical Hit!")
-        };
-        if (modifier.type === 0.5) {
-            console.log("It's not very effective...")
-        };
-        if (modifier.type === 2) {
-            console.log("It's super effective!")
-        };
-
-        console.log(totalDamage);
-        console.log(modifier);
-        return totalDamage;
-    },
-    calculateModifier: (attackPoke, defensePoke, move) => {
         let isCritical = 1;
         let isSTAB = 1;
-        let typeMod = this.calculateEffective(defensePoke, move);
+        let typeMod = 1;
         const critChance = Math.floor(Math.random() * 11);
 
         if (critChance >= 9) {
@@ -93,56 +108,82 @@ const battleFunctions = {
         if (move.type === attackPoke.type) {
             isSTAB = 1.5
         };
-        
+
+        if (pokeType === "Grass") {
+
+            if (moveType === "Grass") {
+                typeMod += 0.5
+            } else if (moveType === "Water") {
+                typeMod = 0.5
+            } else if (moveType === "Fire") {
+                typeMod = 2
+            } else if (moveType === "Flying") {
+                typeMod = 2
+            }
+
+        } else if (pokeType === "Fire") {
+
+            if (moveType === "Grass") {
+                typeMod = 0.5
+            } else if (moveType === "Water") {
+                typeMod = 2
+            } else if (moveType === "Fire") {
+                typeMod = 0.5
+            } else if (moveType === "Flying") {
+                typeMod = 1
+            }
+
+        } else if (pokeType === "Water") {
+
+            if (moveType === "Grass") {
+                typeMod = 2
+            } else if (moveType === "Water") {
+                typeMod = 0.5
+            } else if (moveType === "Fire") {
+                typeMod = 0.5
+            } else if (moveType === "Flying") {
+                typeMod = 1
+            }
+        }
+
         const modifier = {
             mod: isCritical * isSTAB * typeMod,
             crit: isCritical,
             type: typeMod
         };
 
-        return modifier;
+        console.log(modifier);
+
+        const baseDamage = ((((((level * 2) / 5) + 2) * power * (attack / defense)) / 50) + 2);
+        let damageObject = {
+            totalDamage: Math.round(baseDamage * modifier.mod),
+            damageMessage: [],
+        }
+
+        if (modifier.crit === 2) {
+            damageObject.damageMessage.push("Critical Hit!");
+        };
+        if (modifier.type === 0.5) {
+            damageObject.damageMessage.push("It's not very effective...")
+        };
+        if (modifier.type === 2) {
+            damageObject.damageMessage.push("It's super effective!")
+        };
+
+        console.log(damageObject);
+        return damageObject;
     },
-    // Need to change to include all types.
-    calculateEffective: (defensePoke, move) => {
-        let moveType = move.type;
-        let pokeType = defensePoke.type;
-
-        if (pokeType === "Grass") {
-
-            if (moveType === "Grass") {
-                return 0.5
-            } else if (moveType === "Water") {
-                return 0.5
-            } else if (moveType === "Fire") {
-                return 2
-            } else {
-                return 1
-            }
-
-        } else if (pokeType === "Fire") {
-            
-            if (moveType === "Grass") {
-                return 0.5
-            } else if (moveType === "Water") {
-                return 2
-            } else if (moveType === "Fire") {
-                return 0.5
-            } else {
-                return 1
-            }
-
+    checkPokeHealth: (firstPoke, secondPoke, userPokemon, next, end) => {
+        if (firstPoke.baseStats.hp <= 0) {
+            return end();
+        } else if (secondPoke.baseStats.hp <= 0) {
+            return end();
         } else {
-
-            if (moveType === "Grass") {
-                return 2
-            } else if (moveType === "Water") {
-                return 0.5
-            } else if (moveType === "Fire") {
-                return 0.5
+            if (userPokemon.name === firstPoke.name) {
+                return next(firstPoke, secondPoke)
             } else {
-                return 1
+                return next(secondPoke, firstPoke)
             }
-
         }
     }
 };
