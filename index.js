@@ -25,6 +25,7 @@ function init() {
         }
     );
 
+    // User selects their starter Pokemon, which is passed into battleStart()
     setTimeout(() => {
         console.clear();
 
@@ -47,6 +48,9 @@ function init() {
         });
     }, 1500);
 
+    // Starts the battle
+    // Grabs the both the user's and opponent's pokemon data.
+    // Sends out a series of logs in sequence.
     const battleStart = (starter) => {
         console.clear();
         console.log("Trainer Kelley has challenged you to a battle!\n");
@@ -67,12 +71,18 @@ function init() {
         setTimeout(() => {battleMenu(userPokemon, opponentPokemon)}, 4500)
     };
 
+    // Main function of the battle.
     const battleMenu = (userPokemon, opponentPokemon) => {
+
+        // This is the object that will be updated with the pokemon's stats when they change.
+        // Right now the only stat changing is health points.
         let currentUserPoke = userPokemon;
         let currentOppPoke = opponentPokemon;
 
+        // Big Box with current Pokemon data.
         getBattleHeader(currentUserPoke, currentOppPoke);
 
+        // User can either fight or forfeit.
         inquirer.prompt([
             {
                 type: "list",
@@ -87,43 +97,49 @@ function init() {
             if (data.choice === "Fight") {
                 console.clear();
 
-                // Select user move.
+                // User is prompted to select a move from the array of moves in the poke data.
                 inquirer.prompt([
                     {
                         type: "list",
                         name: "move",
                         message: "Select a move:",
-                        choices: userPokemon.moves
+                        choices: currentUserPoke.moves
                     }
                 ]).then(data => {
-
-                    let attackObject = {
-                        firstPoke: "",
-                        secondPoke: "",
-                        firstMove: "",
-                        secondMove: "",
-                        firstMoveDamage: "",
-                        secondMoveDamage: ""
-                    }
-                    
+                
+                    // Finds the user's move data based on the move name they selected.
+                    // Randomly selects the opponents move.
                     const userMove = userPokemon.moves.find(m => m.name === data.move);
-                    const oppMove = oppSelectMove(opponentPokemon.moves);
+                    const oppMove = oppSelectMove(currentOppPoke.moves);
+
+                    // Determines the order of attacks based on the pokemon's speed.
+                    // If Pokemon speeds are equal, coin flip will determine the first attacker.
                     const attackOrder = determineFirst(currentUserPoke, currentOppPoke, userMove, oppMove);
 
-                    attackObject.firstPoke = attackOrder.first;
-                    attackObject.secondPoke = attackOrder.second;
-                    attackObject.firstMove = attackOrder.firstMove;
-                    attackObject.secondMove = attackOrder.secondMove;
-                    attackObject.firstMoveDamage = calculateDamage(attackOrder.first, attackOrder.second, attackOrder.firstMove);
-                    attackObject.secondMoveDamage = calculateDamage(attackOrder.second, attackOrder.first, attackOrder.secondMove);
+                    // Object of all atatck data to be pushed into the battleText function.
+                    const attackObject = {
+                        firstPoke: attackOrder.first,
+                        secondPoke: attackOrder.second,
+                        firstMove: attackOrder.firstMove,
+                        secondMove: attackOrder.secondMove,
+                        firstMoveDamage: calculateDamage(attackOrder.first, attackOrder.second, attackOrder.firstMove),
+                        secondMoveDamage: calculateDamage(attackOrder.second, attackOrder.first, attackOrder.secondMove)
+                    };
 
-                    battleText(userPokemon, attackObject, checkPokeHealth, battleMenu, battleEnd);
+                    // Function that prints out the attack data and adjusts pokemon stats accordingly.
+                    battleText(currentUserPoke, attackObject, checkPokeHealth, battleMenu, battleEnd);
+
                 }).catch(err => {
+
                     if (err) throw err;
+                    console.log("Something went wrong!");
+
                 });
 
             } else {
-                battleEnd(opponentPokemon);
+
+                // Ends the battle
+                battleEnd(currentOppPoke);
             }
         }).catch(err => {
             if (err) throw err;
@@ -131,6 +147,8 @@ function init() {
     };
 
     const battleEnd = (winnerPoke) => {
+
+        // Prints out the winner pokemon and asks the user if they want to play again.
         console.clear();
         console.log(`${winnerPoke.name} has won the battle!`);
         setTimeout(() => {

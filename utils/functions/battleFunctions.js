@@ -2,6 +2,8 @@ const pokeArray = require("../testPokemon");
 
 const battleFunctions = {
     getOpponentPoke: (userPokemon) => {
+
+        // Chooses the opponent pokemon by the user's selection.
         switch (userPokemon) {
             case "Turtwig":
                 return pokeArray.find(p => p.name === "Piplup");
@@ -9,19 +11,26 @@ const battleFunctions = {
                 return pokeArray.find(p => p.name === "Turtwig");
             default:
                 return pokeArray.find(p => p.name === "Chimchar");
-        }
+        };
+
     },
     getBattleHeader: (userPokemon, opponentPokemon) => {
+
+        // Large Box of text to be printed each time battleMenu runs
         console.clear();
         console.log("\n\n-------------------------------------------------------\n")
         console.log(`${userPokemon.name.padEnd(25)} ${"VS".padEnd(21)} ${opponentPokemon.name}`);
         console.log(`HP: ${JSON.stringify(userPokemon.baseStats.hp).padEnd(27)}                 HP: ${opponentPokemon.baseStats.hp}`);
         console.log("\n-------------------------------------------------------\n")
+
     },
     determineFirst: (userPokemon, opponentPokemon, userMove, oppMove) => {
+        
+        // Grabs speed of each pokemon
         const userSpeed = userPokemon.baseStats.speed;
         const oppSpeed = opponentPokemon.baseStats.speed;
 
+        // Two objects, one for if the user pokemon is faster, the other if the opponent pokemon is faster.
         const userPokeFirst = {
             first: userPokemon,
             firstMove: userMove,
@@ -35,6 +44,8 @@ const battleFunctions = {
             secondMove: userMove
         };
 
+        // Return the correct order object.
+        // If the pokemon's speed are equal, coin flip to determine order.
         if (userSpeed > oppSpeed) {
             return userPokeFirst
         } else if (oppSpeed > userSpeed) {
@@ -49,23 +60,29 @@ const battleFunctions = {
         }
     },
     oppSelectMove: (moves) => {
+        
+        // Randomly select opponent move.
         let chance = Math.round(Math.random()) + 1;
         if (chance === 1) {
             return moves[0]
         } else {
             return moves[1]
-        }
+        };
+
     },
     battleText: (userPokemon, attackObject, next, next2, end) => {
+
         console.clear();
+
         // First Pokemon Attack Logs
         console.log(`${attackObject.firstPoke.name} used ${attackObject.firstMove.name}!`);
+        // If there are any damage messages, show them here.
         if (attackObject.firstMoveDamage.damageMessage.length != 0) {
             for (let i = 0; i < attackObject.firstMoveDamage.damageMessage.length; i++) {
                 console.log(attackObject.firstMoveDamage.damageMessage[i]);
             }
         }
-
+        // Print out damage taken and adjust second pokemon's health
         setTimeout(() => {
             console.log(`${attackObject.secondPoke.name} took ${attackObject.firstMoveDamage.totalDamage} damage!`);
             attackObject.secondPoke.baseStats.hp -= attackObject.firstMoveDamage.totalDamage;
@@ -74,18 +91,20 @@ const battleFunctions = {
         // Second Pokemon Attack Logs
         setTimeout(() => {
             console.log(`${attackObject.secondPoke.name} used ${attackObject.secondMove.name}!`);
+            // If there are any damage messages, show them here.
             if (attackObject.secondMoveDamage.damageMessage.length != 0) {
                 for (let i = 0; i < attackObject.secondMoveDamage.damageMessage.length; i++) {
                     console.log(attackObject.secondMoveDamage.damageMessage[i]);
                 }
             }
         }, 2500);
-
+        // Print out damage taken and adjust first pokemon's health
         setTimeout(() => {
             console.log(`${attackObject.firstPoke.name} took ${attackObject.secondMoveDamage.totalDamage} damage!`);
             attackObject.firstPoke.baseStats.hp -= attackObject.secondMoveDamage.totalDamage;
         }, 3750);
 
+        // Determines what happens next.
         setTimeout(() => {
             next(attackObject.firstPoke, attackObject.secondPoke, userPokemon, next2, end);
         }, 5000);
