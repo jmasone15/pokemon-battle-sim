@@ -1,6 +1,7 @@
 const pokeArray = require("../testPokemon");
 
 const battleFunctions = {
+    // Arrow functions aren't bound to the "this" keyword
     getOpponentPoke: (userPokemon) => {
 
         // Chooses the opponent pokemon by the user's selection.

@@ -17,7 +17,7 @@ const {
 
 function init() {
     // Large opening header
-    figlet(
+    figlet( 
         "Pokemon Battle Sim",
         function (err, data) {
             if (err) throw err;
